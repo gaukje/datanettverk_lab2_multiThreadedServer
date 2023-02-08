@@ -12,13 +12,13 @@ def now():
     #Returns the time of day
     return time.ctime(time.time())
 
-def handleClient(connection):     #Function tgat handles each client connection
-    #Client handler
+def handleClient(connection):     #Function that handles each client connection
     while True:
         data = connection.recv(1024).decode()
-        
+        if not data:
+            break
         print("received message = ", data)
-        
+    
         modified_message = data.upper()
         connection.send(modified_message.encode())
         
@@ -26,7 +26,7 @@ def handleClient(connection):     #Function tgat handles each client connection
             break
 
     connection.close()
-
+    print('Connection closed with ', connection)
 """
 handleClient(connection) is the function that handles each client connection. It reads data from the client using 
 connection.recv(1024) (the 1024 specifies the maximum number of bytes to be received at once), converts the received 
@@ -34,25 +34,31 @@ bytes to a string using .decode(), and then sends back the modified data (conver
 send(modified_message.encode()). If the client sends the message "exit", the function breaks out of the while loop and 
 closes the connection using connection.close().
 """
+def broadcast(serverSocket, message):
+    for sock in serverSocket:
+        if sock != serverSocket:
+            sock.send(message.encode())
+
 def main():
     #Creates a server cocket, listens for new connections and spawns a new thread for new connections
 
     serverPort = 12000
     serverSocket = socket(AF_INET, SOCK_STREAM)
-
     try:
         serverSocket.bind(('',serverPort))
-    
     except: 
         print("Bind failed. Error :" )
-
-    serverSocket.listen(1)
+    serverSocket.listen(5)
     print ('The server is ready to receive')
+
+    connectedClients = [serverSocket]
 
     while True:
         connectionSocket, addr = serverSocket.accept()
+        connectedClients.append(connectionSocket)
         print('Server connected by ', addr)
         print('at ', now())
+        broadcast(serverSocket, "A new client has joined")
         thread.start_new_thread(handleClient, (connectionSocket,))
     
     serverSocket.close()
