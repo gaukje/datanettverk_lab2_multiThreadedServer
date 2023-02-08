@@ -26,3 +26,29 @@ def handleClient(connection):
             break
 
         connection.close()
+
+
+def main():
+    #Creates a server cocket, listens for new connections and spawns a new thread for new connections
+
+    serverPort = 12000
+    serverSocket = socket(AF_INET, SOCK_STREAM)
+
+    try:
+        serverSocket.bind('',serverPort)
+    
+    except: 
+        print("Bind failed. Error :" )
+
+    serverSocket.listen(1)
+    print ('The server is ready to receive')
+
+    while True:
+        connectionSocket, addr = serverSocket.accept()
+        print('Server connected by ', addr)
+        print('at ', now())
+        thread.start_new_thread(handleClient, (connectionSocket,))
+    serverSocket.close()
+
+if __name__ == '__main__':
+    main()
