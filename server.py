@@ -4,6 +4,7 @@ The other side must be passive
 ☞ waits for someone else to take initiative for creating a connection
 ☞ this side is called the server
 """
+import random
 from socket import *
 import _thread as thread #The import _thread as thread statement imports the thread module as thread, which provides a way to run multiple threads (also known as light-weight processes) in parallel within a single process.
 import time
@@ -39,8 +40,35 @@ def broadcast(serverSocket, message):
         if sock != serverSocket:
             sock.send(message.encode())
 
+
+def play_rps():
+    while True:
+        #Ask the user if the want to play
+        userChoice = input("Do you want to play a game of rock, paper or scissors? (y/n)").lower()
+
+        #If the answer is no, quit
+        if userChoice == "n":
+            print("Thanks for playing!")
+            break
+
+        if userChoice == "y":
+            userChoice = input("rock, paper, scissors, shoot! (rock/paper/scissors)").lower()
+            computerChoice = random.choice(["rock", "paper", "scissors"])
+            print(f"you chose {userChoice} and the computer chose {computerChoice}.")
+
+            if userChoice == computerChoice:
+                print("It's a tie!")
+            elif userChoice == "rock" and computerChoice == "scissors":
+                print("You win!")
+            elif userChoice == "paper" and computerChoice == "rock":
+                print("You win!")
+            elif userChoice == "scissors" and computerChoice == "paper":
+                print("You win!")
+            else:
+                print("You lose.")
+
 def main():
-    #Creates a server cocket, listens for new connections and spawns a new thread for new connections
+    #Creates a server socket, listens for new connections and spawns a new thread for new connections
 
     serverPort = 12000
     serverSocket = socket(AF_INET, SOCK_STREAM)
@@ -48,8 +76,10 @@ def main():
         serverSocket.bind(('',serverPort))
     except: 
         print("Bind failed. Error :" )
-    serverSocket.listen(5)
+    serverSocket.listen(1)
     print ('The server is ready to receive')
+    #play_rps()
+
 
     connectedClients = [serverSocket]
 
