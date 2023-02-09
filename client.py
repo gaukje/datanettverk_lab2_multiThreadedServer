@@ -28,6 +28,10 @@ while True:
     
     print('From Server : ', modifiedSentence.decode())
     
+        # check if the received message is the broadcast message
+    if modifiedSentence.decode().startswith("A new client has joined"):
+        print("A new client has joined the chat room")
+
     if(sentence == "exit"):
         break
 

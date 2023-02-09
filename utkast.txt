@@ -5,3 +5,11 @@
         connection.send(f'{username}, you have the joined the chat \n'.encode())
         broadcast(connection, f'{username} joined the chat')
         """
+
+        """
+        handleClient(connection) is the function that handles each client connection. It reads data from the client using 
+        connection.recv(1024) (the 1024 specifies the maximum number of bytes to be received at once), converts the received 
+        bytes to a string using .decode(), and then sends back the modified data (converted to uppercase) using connection.
+        send(modified_message.encode()). If the client sends the message "exit", the function breaks out of the while loop and 
+        closes the connection using connection.close().
+        """     

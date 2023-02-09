@@ -31,13 +31,7 @@ def handleClient(connection):     #Function that handles each client connection
 
     connection.close()
     print('Connection closed with ', connection)
-"""
-handleClient(connection) is the function that handles each client connection. It reads data from the client using 
-connection.recv(1024) (the 1024 specifies the maximum number of bytes to be received at once), converts the received 
-bytes to a string using .decode(), and then sends back the modified data (converted to uppercase) using connection.
-send(modified_message.encode()). If the client sends the message "exit", the function breaks out of the while loop and 
-closes the connection using connection.close().
-"""
+
 
 def play_rps():
     while True:
@@ -91,7 +85,7 @@ def main():
         connectedClients.append(connectionSocket)
         print('Server connected by ', addr)
         print('at ', now())
-        broadcast(serverSocket, "A new client has joined \n")
+        broadcast(serverSocket, "A new client has joined \n".lower())
         thread.start_new_thread(handleClient, (connectionSocket,))
     
     serverSocket.close()
