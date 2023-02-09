@@ -14,23 +14,35 @@ def now():
     return time.ctime(time.time())
 
 clients = []
+client_count = 0
 
 def handleClient(connection):     #Function that handles each client connection
-    while True:
-        #Username
+    
+    global client_count
+    client_count += 1
+
+    #Username
+    username = connection.recv(1024).decode()
+    print(f'{username} joined the server \n')
+    clients.append(connection)
+    connection.send(f'{username}, you have the joined the chat \n'.encode())
+    broadcast(connection, f'{username} joined the chat')
+    
+    while True:    
         data = connection.recv(1024).decode()
         if not data:
             break
-        print("received message = ", data)
-    
-        modified_message = data.upper()
-        connection.send(modified_message.encode())
+        print("received message from {username} : {data} ")
+        broadcast(f"{username}: {data}", connection)
         
         if(data == "exit"):
             break
-
+    
+    clients.remove(connection)
+    client_count -= 1
+    broadcast(f"{username} has left the chat", connection)
     connection.close()
-    print('Connection closed with ', connection)
+    print(f'Connection closed with {username} ')
 
 
 def play_rps():
@@ -59,9 +71,9 @@ def play_rps():
             else:
                 print("You lose.")
 
-def broadcast(connectionSocket, message):
+def broadcast(message, sender):
     for client in clients:
-        if client != connectionSocket:
+        if client != client:
             client.send(message.encode())
 
 
@@ -85,7 +97,7 @@ def main():
         connectedClients.append(connectionSocket)
         print('Server connected by ', addr)
         print('at ', now())
-        broadcast(serverSocket, "A new client has joined \n".lower())
+        broadcast(serverSocket, "A new client has joined ".lower())
         thread.start_new_thread(handleClient, (connectionSocket,))
     
     serverSocket.close()

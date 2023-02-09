@@ -1,67 +1,84 @@
-import socket
+import random
+from socket import *
+import _thread as thread
+import time
+
+def now():
+    return time.ctime(time.time())
 
 clients = []
 
-def broadcast(message, sender_socket):
-    for client in clients:
-        if client != sender_socket:
-            client.send(message)
-
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(("0.0.0.0", 5000))
-    server_socket.listen(10)
-
-    print("Server is ready to receive connections...")
+def handleClient(connection, address):
+    username = connection.recv(1024).decode()
+    print(f'{username} ({address}) has joined the server at {now()}')
+    broadcast(f'{username} ({address}) has joined the server')
 
     while True:
-    client_socket, client_address = server_socket.accept()
-    print("Received connection from {}".format(client_address))
-    clients.append(client_socket)
-    broadcast("{} joined the chat".format(client_address), client_socket)
+        data = connection.recv(1024).decode()
+        if not data:
+            break
+        broadcast(f'{username}: {data}', connection)
+        
+        if data == 'exit':
+            break
+
+    connection.close()
+    clients.remove(connection)
+    print(f'{username} ({address}) has left the server at {now()}')
+    broadcast(f'{username} ({address}) has left the server')
+
+
+def broadcast(message, sender_conn=None):
+    for client in clients:
+        if client != sender_conn:
+            client.send(message.encode())
+
+
+def game(client1, client2):
+    while True:
+        client1.send(b'Enter rock, paper, or scissors: ')
+        client2.send(b'Enter rock, paper, or scissors: ')
+        move1 = client1.recv(1024).decode().strip().lower()
+        move2 = client2.recv(1024).decode().strip().lower()
+        
+        if move1 == 'exit' or move2 == 'exit':
+            break
+        
+        if move1 == move2:
+            client1.send(b'Tie!')
+            client2.send(b'Tie!')
+        elif move1 == 'rock' and move2 == 'scissors':
+            client1.send(b'You win!')
+            client2.send(b'You lose!')
+        elif move1 == 'paper' and move2 == 'rock':
+            client1.send(b'You win!')
+            client2.send(b'You lose!')
+        elif move1 == 'scissors' and move2 == 'paper':
+            client1.send(b'You win!')
+            client2.send(b'You lose!')
+        else:
+            client1.send(b'You lose!')
+            client2.send(b'You win!')
+
+
+def main():
+    server_socket = socket(AF_INET, SOCK_STREAM)
+    server_socket.bind(('', 12000))
+    server_socket.listen(5)
+    print(f'Server is ready to receive at {now()}')
     
     while True:
-        message = client_socket.recv(1024).decode("utf-8")
-        if message:
-            broadcast(message, client_socket)
-        else:
-            client_socket.close()
-            clients.remove(client_socket)
-            broadcast("{} left the chat".format(client_address), client_socket)
-            break
-def main():
-    # initialize server socket
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.bind((127.0.0.1, 12000))
-    server_socket.listen(5)
-    print(f"Server started at {127.0.0.1}:{12000}")
+        connection_socket, address = server_socket.accept()
+        clients.append(connection_socket)
+        print(f'Accepted connection from {address}')
+        thread.start_new_thread(handleClient, (connection_socket, address))
 
-    # initialize list to store connected clients
-    clients = []
+        if len(clients) >= 2:
+            client1, client2 = clients[-2:]
+            thread.start_new_thread(game, (client1, client2))
 
-    while True:
-        # wait for new clients to connect
-        client_socket, client_address = server_socket.accept()
-        print(f"Accepted connection from {client_address}")
-
-        # add new client to the list of connected clients
-        clients.append(client_socket)
-
-        # notify other clients of the new client's arrival
-        broadcast(client_socket, " joined the chat!", clients)
-
-        # start a new thread to handle communication with the new client
-        client_thread = threading.Thread(target=handle_client, args=(client_socket, clients))
-        client_thread.start()
-
-if __name__ == "__main__":
-    main()  
+    server_socket.close()
 
 
-"""
-            In the above code, clients is a list that keeps track of all the connected clients. The broadcast function takes a message and sender socket as input and sends the message to all clients except the sender. The server_socket is created and bound to the IP address 0.0.0.0 and port 5000. The server is then set to listen for incoming connections.
-
-The main loop accepts incoming connections and adds the client socket to the clients list. The broadcast function is called to notify all clients that a new client has joined the chat.
-
-Another loop is started to receive messages from the client. The recv method is used to receive messages and the send method is used to broadcast the messages to all clients except the sender. If a client disconnects, the client socket is closed, removed from the clients list and a broadcast is sent to notify all clients that the client has left the chat.
-            """
+if __name__ == '__main__':
+    main()
