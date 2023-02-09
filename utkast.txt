@@ -1,0 +1,7 @@
+        """
+        username = connection.recv(1024).decode()
+        print(f'{username} joined the server \n')
+        clients.append(connection)
+        connection.send(f'{username}, you have the joined the chat \n'.encode())
+        broadcast(connection, f'{username} joined the chat')
+        """

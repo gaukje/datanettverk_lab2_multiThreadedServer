@@ -13,8 +13,11 @@ def now():
     #Returns the time of day
     return time.ctime(time.time())
 
+clients = []
+
 def handleClient(connection):     #Function that handles each client connection
     while True:
+        #Username
         data = connection.recv(1024).decode()
         if not data:
             break
@@ -35,11 +38,6 @@ bytes to a string using .decode(), and then sends back the modified data (conver
 send(modified_message.encode()). If the client sends the message "exit", the function breaks out of the while loop and 
 closes the connection using connection.close().
 """
-def broadcast(serverSocket, message):
-    for sock in serverSocket:
-        if sock != serverSocket:
-            sock.send(message.encode())
-
 
 def play_rps():
     while True:
@@ -67,6 +65,12 @@ def play_rps():
             else:
                 print("You lose.")
 
+def broadcast(connectionSocket, message):
+    for client in clients:
+        if client != connectionSocket:
+            client.send(message.encode())
+
+
 def main():
     #Creates a server socket, listens for new connections and spawns a new thread for new connections
 
@@ -76,10 +80,9 @@ def main():
         serverSocket.bind(('',serverPort))
     except: 
         print("Bind failed. Error :" )
-    serverSocket.listen(1)
+    serverSocket.listen(5)
     print ('The server is ready to receive')
     #play_rps()
-
 
     connectedClients = [serverSocket]
 
@@ -88,7 +91,7 @@ def main():
         connectedClients.append(connectionSocket)
         print('Server connected by ', addr)
         print('at ', now())
-        broadcast(serverSocket, "A new client has joined")
+        broadcast(serverSocket, "A new client has joined \n")
         thread.start_new_thread(handleClient, (connectionSocket,))
     
     serverSocket.close()

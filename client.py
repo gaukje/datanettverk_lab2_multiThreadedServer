@@ -18,8 +18,11 @@ except:
     print("ConnectionError")
     sys.exit()
 
+#username = input("Enter your username: ")
+#clientSocket.send(username.encode())
+
 while True:
-    sentence = input('What would you like to send to the server?')
+    sentence = input('What would you like to send to the server? ')
     clientSocket.send(sentence.encode())
     modifiedSentence = clientSocket.recv(1024)
     
