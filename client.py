@@ -1,14 +1,14 @@
 
 import sys
 import select
-import socket
+from socket import *
 
 # Client side connects to the server and sends a message to everyone
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# write server ip and port, and connect
-### write your code here ###
-### your code ends here ###
+server_ip = "127.0.0.1" #Standard IP adress
+server_port = 12000 #Standard port
+client_socket = socket.socket(AF_INET, SOCK_STREAM)
+client_socket.connect((server_ip, server_port))
 
 while True:
     """ we are going to use a select-based approach here because it will help
@@ -27,15 +27,24 @@ while True:
     # from a server
     for socks in read_sockets:
         if socks == client_socket:
-            # receive message from client and display it on the server side
-            # also handle exceptions here if there is no message from the
-            # client, you should exit.
-            ### write your code here ###
-            ### your code ends here ###
+            try:
+                message = socks.recv(2048).decode()
+                print(message)
+                # receive message from client and display it on the server side
+                # exception if there is no message
+                if not message:
+                    print("Connection closed by server")
+                    # exit if there is no message
+                    sys.exit
+                elif "has left" in message:
+                    pass
+            except Exception as e:
+                print("Error receiving message from server", type(e))
         else:
             # takes inputs from the user
             message = sys.stdin.readline()
             # send a message to the server
-            ### write your code here ###
-            ### your code ends here ###
-client_socket.close()
+            client_socket.sendall(message.encode())
+            if message.strip() in ["quit", "exit", "escape", "esc", "out"]:
+                client_socket.close()
+                sys.exit()
