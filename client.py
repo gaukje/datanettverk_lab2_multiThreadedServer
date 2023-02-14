@@ -1,38 +1,41 @@
-"""
-One side must be the active one
-☞ take the initiative in creating the connection
-☞ this side is called the client
-"""
 
-
-from socket import *
 import sys
-serverName = '127.0.0.1'
-serverPort = 12000
-clientSocket = socket(AF_INET, SOCK_STREAM)  #This line creates a new socket using the AF_INET address family and the SOCK_STREAM socket type. The AF_INET address family specifies that the socket is using the IPv4 protocol, and the SOCK_STREAM socket type indicates that the socket is using the TCP protocol.
+import select
+import socket
 
-try: 
-    clientSocket.connect((serverName, serverPort))
+# Client side connects to the server and sends a message to everyone
 
-except:
-    print("ConnectionError")
-    sys.exit()
-
-#username = input("Enter your username: ")
-#clientSocket.send(username.encode())
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# write server ip and port, and connect
+### write your code here ###
+### your code ends here ###
 
 while True:
-    sentence = input('What would you like to send to the server? ')
-    clientSocket.send(sentence.encode())
-    modifiedSentence = clientSocket.recv(1024)
-    
-    print('From Server : ', modifiedSentence.decode())
-    
-        # check if the received message is the broadcast message
-    if modifiedSentence.decode().startswith("A new client has joined"):
-        print("A new client has joined the chat room")
+    """ we are going to use a select-based approach here because it will help
+    us deal with two inputs (user's input (stdin) and server's messages from 
+    socket)
+    """
+    inputs = [sys.stdin, client_socket]
 
-    if(sentence == "exit"):
-        break
+    """ read the select documentations - You pass select three lists: the 
+    first contains all sockets that you might want to try reading; the 
+    second all the sockets you might want to try writing to, and the last 
+    (normally left empty) those that you want to check for errors. """
 
-clientSocket.close()
+    read_sockets, write_socket, error_socket = select.select(inputs, [], [])
+    # we check if the message is either coming from your terminal or
+    # from a server
+    for socks in read_sockets:
+        if socks == client_socket:
+            # receive message from client and display it on the server side
+            # also handle exceptions here if there is no message from the
+            # client, you should exit.
+            ### write your code here ###
+            ### your code ends here ###
+        else:
+            # takes inputs from the user
+            message = sys.stdin.readline()
+            # send a message to the server
+            ### write your code here ###
+            ### your code ends here ###
+client_socket.close()

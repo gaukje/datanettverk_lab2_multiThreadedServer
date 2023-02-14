@@ -1,106 +1,85 @@
 """
-The other side must be passive
-☞ it is prepared for accepting connections
-☞ waits for someone else to take initiative for creating a connection
-☞ this side is called the server
+Server side: it simultaneously handle multiple clients
+and broadcast when a client new client joins or a client
+sends a message.
 """
-import random
 from socket import *
-import _thread as thread #The import _thread as thread statement imports the thread module as thread, which provides a way to run multiple threads (also known as light-weight processes) in parallel within a single process.
+import _thread as thread
 import time
+import sys
+
+# this is too keep all the newly joined connections!
+all_client_connections = []
 
 def now():
-    #Returns the time of day
+
+    """
+    returns the time of day
+    """
     return time.ctime(time.time())
 
-clients = []
-client_count = 0
-
-def handleClient(connection):     #Function that handles each client connection
+def handleClient(connection, addr):
+    """
+    a client handler function 
+    """
+    # this is where we broadcast everyone that a new client has joined
+    ### Write your code here ###
+    # append this this to the list for broadcast
+    # create a message to inform all other clients
+    # that a new client has just joined.
+    ### Your code ends here ###
     
-    global client_count
-    client_count += 1
-
-    #Username
-    username = connection.recv(1024).decode()
-    print(f'{username} joined the server \n')
-    clients.append(connection)
-    connection.send(f'{username}, you have the joined the chat \n'.encode())
-    broadcast(connection, f'{username} joined the chat')
-    
-    while True:    
-        data = connection.recv(1024).decode()
-        if not data:
-            break
-        print("received message from {username} : {data} ")
-        broadcast(f"{username}: {data}", connection)
-        
-        if(data == "exit"):
-            break
-    
-    clients.remove(connection)
-    client_count -= 1
-    broadcast(f"{username} has left the chat", connection)
-    connection.close()
-    print(f'Connection closed with {username} ')
-
-
-def play_rps():
     while True:
-        #Ask the user if the want to play
-        userChoice = input("Do you want to play a game of rock, paper or scissors? (y/n)").lower()
-
-        #If the answer is no, quit
-        if userChoice == "n":
-            print("Thanks for playing!")
+        message = connection.recv(2048).decode()
+        print(now() + " " + str(addr) + "#  ", message)
+        if (message == "exit" or not message):
             break
+        ### Write your code here ###
+        # broadcast this message to the others
+        ### Your code ends here ###
+    connection.close()
+    all_client_connections.remove(connection)
 
-        if userChoice == "y":
-            userChoice = input("rock, paper, scissors, shoot! (rock/paper/scissors)").lower()
-            computerChoice = random.choice(["rock", "paper", "scissors"])
-            print(f"you chose {userChoice} and the computer chose {computerChoice}.")
+def broadcast(connection, message):
 
-            if userChoice == computerChoice:
-                print("It's a tie!")
-            elif userChoice == "rock" and computerChoice == "scissors":
-                print("You win!")
-            elif userChoice == "paper" and computerChoice == "rock":
-                print("You win!")
-            elif userChoice == "scissors" and computerChoice == "paper":
-                print("You win!")
-            else:
-                print("You lose.")
-
-def broadcast(message, sender):
-    for client in clients:
-        if client != client:
-            client.send(message.encode())
-
+    print("Broadcasting")
+    ### Write your code here ###
+    for c in all_client_connections:
+        if c != connection:
+            try:
+                c.send(message.encode())
+            except:
+                print ("Something went wrong!, couldn't send message to client")
+                c.close()
+                all_client_connections.remove(c)
+    ### Your code ends here ###
 
 def main():
-    #Creates a server socket, listens for new connections and spawns a new thread for new connections
 
+    """
+    creates a server socket, listens for new connections,
+    and spawns a new thread whenever a new connection join
+    """
     serverPort = 12000
     serverSocket = socket(AF_INET, SOCK_STREAM)
     try:
-        serverSocket.bind(('',serverPort))
-    except: 
-        print("Bind failed. Error :" )
-    serverSocket.listen(5)
-    print ('The server is ready to receive')
-    #play_rps()
-
-    connectedClients = [serverSocket]
-
+        # Use the bind function wisely!
+        ### Write your code here ###
+        ### Your code ends here ###
+    except:
+        print("Bind failed. Error : ")
+        sys.exit()
+    serverSocket.listen(10)
+    print('The server is ready to receive')
     while True:
-        connectionSocket, addr = serverSocket.accept()
-        connectedClients.append(connectionSocket)
+        ### Write your code here ###
+        connectionSocket, addr =   # accept a connection
+        ### You code ends here ###
+
         print('Server connected by ', addr)
         print('at ', now())
-        broadcast(serverSocket, "A new client has joined ".lower())
-        thread.start_new_thread(handleClient, (connectionSocket,))
-    
-    serverSocket.close()
+        thread.start_new_thread(handleClient, (connectionSocket, addr))
+        serverSocket.close()
 
 if __name__ == '__main__':
     main()
