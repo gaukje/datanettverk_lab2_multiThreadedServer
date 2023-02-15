@@ -1,14 +1,13 @@
-
+from socket import *
 import sys
 import select
-from socket import *
-
 # Client side connects to the server and sends a message to everyone
 
 server_ip = "127.0.0.1" #Standard IP adress
 server_port = 12000 #Standard port
-client_socket = socket.socket(AF_INET, SOCK_STREAM)
+client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect((server_ip, server_port))
+
 
 while True:
     """ we are going to use a select-based approach here because it will help
@@ -16,6 +15,8 @@ while True:
     socket)
     """
     inputs = [sys.stdin, client_socket]
+
+    print(inputs)
 
     """ read the select documentations - You pass select three lists: the 
     first contains all sockets that you might want to try reading; the 
@@ -37,14 +38,19 @@ while True:
                     # exit if there is no message
                     sys.exit
                 elif "has left" in message:
+                    print(message)
                     pass
+                print("Message from server: ", message)
             except Exception as e:
-                print("Error receiving message from server", type(e))
+                print("Error receiving message from server", e)
         else:
             # takes inputs from the user
             message = sys.stdin.readline()
             # send a message to the server
-            client_socket.sendall(message.encode())
+            client_socket.send(message.encode())
+            """
             if message.strip() in ["quit", "exit", "escape", "esc", "out"]:
                 client_socket.close()
                 sys.exit()
+                """
+client_socket.close()

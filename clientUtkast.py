@@ -3,7 +3,7 @@ One side must be the active one
 ☞ take the initiative in creating the connection
 ☞ this side is called the client
 """
-
+"""
 
 from socket import *
 import sys
@@ -38,3 +38,4 @@ while True:
         break
 
 clientSocket.close()
+"""

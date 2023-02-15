@@ -19,7 +19,7 @@ def handleClient(connection, addr):
     #a client handler function 
     
     # this is where we broadcast everyone that a new client has joined
-    all_client_connections.append(connection, addr)
+    all_client_connections.append(connection)
 
     # append this this to the list for broadcast
     newUserMessage = f"{addr} has joined the server"            # String that tells other users that another user has joined
@@ -27,22 +27,24 @@ def handleClient(connection, addr):
     # create a message to inform all other clients
     # that a new client has just joined.
     
-    
-    while True:
-        message = connection.recv(2048).decode()
-        print(now() + " " + str(addr) + "#  ", message)
-        if (message.strip() in ["quit", "exit", "escape", "esc", "out"] or not message): 
-            connection.close()
-            all_client_connections.remove(connection)
-            broadcast(connection, f"{addr} has left the server")
-            break
-        # broadcast this message to the others
-        else:
-            broadcast(connection, f"{addr}: {message}")
+    try:
+        while True:
+            message = connection.recv(2048).decode()
+            print(now() + " " + str(addr) + "#  ", message)
+            if (message.strip() in ["quit", "exit", "escape", "esc", "out"] or not message): 
+                connection.close()
+                broadcast(connection, f"{addr} has left the server")
+                all_client_connections.remove(connection)
+                break
+            # broadcast this message to the others
+            else:
+                broadcast(connection, f"{addr}: {message}")
+    except:
+        all_client_connections.remove(connection)
+        connection.close()
 
 
 def broadcast(connection, message):
-
     print("Broadcasting")
     for c in all_client_connections:
         if c != connection:
@@ -68,7 +70,7 @@ def main():
     except:
         print("Bind failed. Error : ")
         sys.exit()
-    serverSocket.listen(10)
+    serverSocket.listen(1)
     print('The server is ready to receive')
     while True:
         connectionSocket, addr = serverSocket.accept()

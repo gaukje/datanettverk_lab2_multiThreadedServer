@@ -1,3 +1,4 @@
+"""
 import random
 from socket import *
 import _thread as thread
@@ -82,3 +83,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    """

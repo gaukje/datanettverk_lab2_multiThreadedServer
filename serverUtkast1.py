@@ -4,6 +4,7 @@ The other side must be passive
 ☞ waits for someone else to take initiative for creating a connection
 ☞ this side is called the server
 """
+"""
 import random
 from socket import *
 import _thread as thread #The import _thread as thread statement imports the thread module as thread, which provides a way to run multiple threads (also known as light-weight processes) in parallel within a single process.
@@ -78,3 +79,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    """
