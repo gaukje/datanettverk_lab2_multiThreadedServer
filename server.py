@@ -12,38 +12,38 @@ import sys
 all_client_connections = []
 
 def now():
-
-    """
-    returns the time of day
-    """
+    #returns the time of day
     return time.ctime(time.time())
 
 def handleClient(connection, addr):
-    """
-    a client handler function 
-    """
+    #a client handler function 
+    
     # this is where we broadcast everyone that a new client has joined
-    ### Write your code here ###
+    all_client_connections.append(connection, addr)
+
     # append this this to the list for broadcast
+    newUserMessage = f"{addr} has joined the server"            # String that tells other users that another user has joined
+    broadcast(connection, newUserMessage)
     # create a message to inform all other clients
     # that a new client has just joined.
-    ### Your code ends here ###
+    
     
     while True:
         message = connection.recv(2048).decode()
         print(now() + " " + str(addr) + "#  ", message)
-        if (message == "exit" or not message):
+        if (message.strip() in ["quit", "exit", "escape", "esc", "out"] or not message): 
+            connection.close()
+            all_client_connections.remove(connection)
+            broadcast(connection, f"{addr} has left the server")
             break
-        ### Write your code here ###
         # broadcast this message to the others
-        ### Your code ends here ###
-    connection.close()
-    all_client_connections.remove(connection)
+        else:
+            broadcast(connection, f"{addr}: {message}")
+
 
 def broadcast(connection, message):
 
     print("Broadcasting")
-    ### Write your code here ###
     for c in all_client_connections:
         if c != connection:
             try:
@@ -52,7 +52,6 @@ def broadcast(connection, message):
                 print ("Something went wrong!, couldn't send message to client")
                 c.close()
                 all_client_connections.remove(c)
-    ### Your code ends here ###
 
 def main():
 
@@ -63,23 +62,22 @@ def main():
     serverPort = 12000
     serverSocket = socket(AF_INET, SOCK_STREAM)
     try:
-        # Use the bind function wisely!
-        ### Write your code here ###
-        ### Your code ends here ###
+        serverSocket.bind(('', serverPort))     # tuple containing ip address and port number
+        # The ip address is represented with '' which means that the server will bind to all available networks on the local machine    
+
     except:
         print("Bind failed. Error : ")
         sys.exit()
     serverSocket.listen(10)
     print('The server is ready to receive')
     while True:
-        ### Write your code here ###
-        connectionSocket, addr =   # accept a connection
-        ### You code ends here ###
+        connectionSocket, addr = serverSocket.accept()
 
         print('Server connected by ', addr)
         print('at ', now())
         thread.start_new_thread(handleClient, (connectionSocket, addr))
-        serverSocket.close()
+
+    serverSocket.close()
 
 if __name__ == '__main__':
     main()
